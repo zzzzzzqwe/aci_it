@@ -6,3 +6,9 @@
 
 # Установка VirtualBox
 1. Загружаю установщик VirtualBox с официального сайта, принимаю соглашение, завершаю установку.
+
+![image](screenshots/Screenshot_1.png)
+
+![image](screenshots/Screenshot_2.png)
+
+![image](screenshots/Screenshot_3.png)
