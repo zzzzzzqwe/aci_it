@@ -49,3 +49,17 @@
 ![image](screenshots/Screenshot_12.png)
 
 ![image](screenshots/Screenshot_13.png)
+
+
+# Установка Guest Additions
+
+Устанавливаю Guest Additions, в консоли вышедшей папки прописываю:
+    ```bash
+    sudo apt update 
+    sudo apt install -y build-essential dkms linux-headers-$(uname -r) 
+    cd /media/$USER/VBox_GAs_* 
+    sudo ./VBoxLinuxAdditions.run 
+    sudo reboot
+    ```
+
+![image](screenshots/Screenshot_14.png)
