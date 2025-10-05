@@ -298,9 +298,8 @@ STATUS=$?
 
 Создаёт сжатый архив tar.gz.
 
-```
 -C "$(dirname "$SRC_DIR")" переключает директорию на родительскую, чтобы архив содержал только сам каталог без полного пути.
-```
+
 
 Сохраняет код возврата команды в STATUS.
 
@@ -331,8 +330,9 @@ echo "$(date -Iseconds) SRC=$SRC_DIR DST=$DST_DIR FILE=$ARCHIVE_NAME SIZE=$SIZE 
 2025-10-05T19:18:21 SRC=/path/to/source DST=/home/user/backups FILE=backup_source_20251005_191821.tar.gz SIZE=128M STATUS=0
 ```
 8. Завершение скрипта
+```
 exit $STATUS
-
+```
 
 Возвращает код возврата:
 
