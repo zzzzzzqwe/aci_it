@@ -113,10 +113,9 @@ ask_input() {
 
 3. Ввод имени и отдела
 
+```bash
 ask_input "Введите ваше имя"
 USER_NAME="$ASKED_VALUE"
-
-```bash
 read -rp "Введите ваш отдел/группу (можно оставить пустым): " USER_DEPT
 if [[ -z "$USER_DEPT" ]]; then
     USER_DEPT="не указан"
