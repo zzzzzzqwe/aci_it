@@ -4,9 +4,7 @@
 
 ---
 
-# Задача 1: 
-
-CLI‑ассистент: приветствие, валидация и мини‑отчёт о системе.
+# Задача 1: CLI‑ассистент: приветствие, валидация и мини‑отчёт о системе.
 
 ### Цель
 
@@ -169,3 +167,175 @@ echo "Здравствуйте, $USER_NAME ($USER_DEPT)!"
 ```
 
 Выводит персонализированное приветствие, используя введённое имя и отдел/группу.
+
+---
+
+# Задача 2: Резервное копирование каталога с логированием и ротацией
+
+### Цель
+
+Отработать аргументы скрипта, работу с файлами/путями, условия, архивирование, коды возврата и логирование.
+
+### Итоговый скрипт
+```bash
+#!/bin/bash
+
+
+SRC_DIR="$1"
+DST_DIR="${2:-$HOME/backups}"  # если второй аргумент не задан, используем ~/backups
+
+if [[ -z "$SRC_DIR" ]]; then
+    echo "Ошибка: не указан путь к каталогу-источнику."
+    echo "Использование: $0 <source_dir> [backup_dir]"
+    exit 1
+fi
+
+if [[ ! -d "$SRC_DIR" ]]; then
+    echo "Ошибка: источник '$SRC_DIR' не существует или не является каталогом."
+    exit 2
+fi
+
+
+mkdir -p "$DST_DIR" || {
+    echo "Ошибка: не удалось создать каталог для бэкапов '$DST_DIR'."
+    exit 3
+}
+
+
+if [[ ! -w "$DST_DIR" ]]; then
+    echo "Ошибка: каталог для бэкапов '$DST_DIR' недоступен для записи."
+    exit 4
+fi
+
+
+BASENAME_SRC=$(basename "$SRC_DIR")
+TIMESTAMP=$(date "+%Y%m%d_%H%M%S")
+ARCHIVE_NAME="backup_${BASENAME_SRC}_${TIMESTAMP}.tar.gz"
+ARCHIVE_PATH="$DST_DIR/$ARCHIVE_NAME"
+
+
+tar -czf "$ARCHIVE_PATH" -C "$(dirname "$SRC_DIR")" "$BASENAME_SRC"
+STATUS=$?
+
+
+if [[ $STATUS -eq 0 ]]; then
+    SIZE=$(du -h "$ARCHIVE_PATH" | cut -f1)
+else
+    SIZE=0
+fi
+
+
+LOG_FILE="$DST_DIR/backup.log"
+echo "$(date -Iseconds) SRC=$SRC_DIR DST=$DST_DIR FILE=$ARCHIVE_NAME SIZE=$SIZE STATUS=$STATUS" >> "$LOG_FILE"
+
+
+exit $STATUS
+```
+
+1. Аргументы и директории
+```bash
+SRC_DIR="$1"
+DST_DIR="${2:-$HOME/backups}"
+```
+
+SRC_DIR — путь к каталогу, который нужно архивировать.
+
+DST_DIR — путь к каталогу для хранения бэкапов; если не указан, по умолчанию используется ~/backups.
+
+2. Проверка существования источника
+```
+if [[ -z "$SRC_DIR" ]]; then
+    echo "Ошибка: не указан путь к каталогу-источнику."
+    exit 1
+fi
+
+if [[ ! -d "$SRC_DIR" ]]; then
+    echo "Ошибка: источник '$SRC_DIR' не существует или не является каталогом."
+    exit 2
+fi
+```
+
+Проверяет, что путь передан и существует как каталог.
+
+Если нет — скрипт завершается с кодом ошибки.
+
+3. Создание каталога бэкапов
+```
+mkdir -p "$DST_DIR" || {
+    echo "Ошибка: не удалось создать каталог для бэкапов '$DST_DIR'."
+    exit 3
+}
+
+if [[ ! -w "$DST_DIR" ]]; then
+    echo "Ошибка: каталог для бэкапов '$DST_DIR' недоступен для записи."
+    exit 4
+fi
+```
+
+Создаёт каталог для бэкапов при необходимости (mkdir -p).
+
+Проверяет, что каталог доступен для записи.
+
+4. Формирование имени архива
+```
+BASENAME_SRC=$(basename "$SRC_DIR")
+TIMESTAMP=$(date "+%Y%m%d_%H%M%S")
+ARCHIVE_NAME="backup_${BASENAME_SRC}_${TIMESTAMP}.tar.gz"
+ARCHIVE_PATH="$DST_DIR/$ARCHIVE_NAME"
+```
+
+Берёт имя исходного каталога (basename).
+
+Формирует метку времени в формате YYYYMMDD_HHMMSS.
+
+Создаёт полное имя архива.
+
+5. Создание архива
+```
+tar -czf "$ARCHIVE_PATH" -C "$(dirname "$SRC_DIR")" "$BASENAME_SRC"
+STATUS=$?
+```
+
+Создаёт сжатый архив tar.gz.
+
+```
+-C "$(dirname "$SRC_DIR")" переключает директорию на родительскую, чтобы архив содержал только сам каталог без полного пути.
+```
+
+Сохраняет код возврата команды в STATUS.
+
+6. Получение размера архива
+```
+if [[ $STATUS -eq 0 ]]; then
+    SIZE=$(du -h "$ARCHIVE_PATH" | cut -f1)
+else
+    SIZE=0
+fi
+```
+
+Если архив создан успешно, вычисляет его размер с помощью du -h.
+
+Если ошибка — размер приравнивается к 0.
+
+7. Логирование
+```
+LOG_FILE="$DST_DIR/backup.log"
+echo "$(date -Iseconds) SRC=$SRC_DIR DST=$DST_DIR FILE=$ARCHIVE_NAME SIZE=$SIZE STATUS=$STATUS" >> "$LOG_FILE"
+```
+
+Записывает лог в файл backup.log.
+
+Формат записи:
+
+```
+2025-10-05T19:18:21 SRC=/path/to/source DST=/home/user/backups FILE=backup_source_20251005_191821.tar.gz SIZE=128M STATUS=0
+```
+8. Завершение скрипта
+exit $STATUS
+
+
+Возвращает код возврата:
+
+0 — успешное создание архива,
+
+≠0 — ошибка при архивировании или проверках.
